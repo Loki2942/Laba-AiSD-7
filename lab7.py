@@ -9,15 +9,14 @@
 В усложненной программе необходимо чтобы сумма координат точки была кратна трём,
 затем рассчитать периметр треугольника по координатам,периметр самого большого треугольника, вывести в консоль.
 """
+
 import re
 import random
 from math import *
 from operator import attrgetter
 
-def L(x1, y1, x2, y2):
-    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-def combinations(lst, k):
+def combinations(lst, k): # составляем все возможные сочетания точек
     if k == 0:
         return [[]]
     res = []
@@ -28,59 +27,65 @@ def combinations(lst, k):
             res.append([elem] + j)
     return res
 
-class Triangle:
-    def __init__(self, coordinates):
-        self.coordinates = coordinates
 
-class Perimeter:
-    def __init__(self, x1, x2, x3, y1, y2, y3):
-        self.perimeter = round(L(x1, y1, x2, y2) + L(x2, y2, x3, y3) + L(x3, y3, x1, y1))
+class Points():
+    def __init__(self):
+        s = 0
+        while s != 1:
+            x = random.randint(0, 100)
+            y = random.randint(0, 100)
+            # ограничение на характеристики объектов
+            if (x + y) % 3 == 0:
+                s +=1
+                self.coordinates = (x, y)
+    def __str__(self):
+        return str(self.coordinates)
+
+
+class Perimeter():
+    def length(self, x1, y1, x2, y2):
+        return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+    def __init__(self, i):
+        i = (' '.join(map(str, i)))
+        # ищем в списке i координаты
+        x, y = list(map(list, zip(*[list(map(int, pair)) for pair in re.findall(r"\((\d+)\s*,\s*(\d+)\)", i)])))
+        x1, x2, x3 = x[0], x[1], x[2]
+        y1, y2, y3 = y[0], y[1], y[2]
+        perimeter = round(self.length(x1, y1, x2, y2) + self.length(x2, y2, x3, y3) + self.length(x3, y3, x1, y1))
+        self.perimeter = perimeter
+
+    def __str__(self):
+        return str(self.perimeter)
 
 try:
     z = int(input("Введите количество точек (число должно быть больше или равно 3): "))
     while z < 3:  # ошибка в случае введения слишком малого числа
         z = int(input("Вы ввели число, неподходящее по условию, введите число K, большее или равное 3: "))
 
-    n = 25  # это число задаёт диапазон для функции рандом
-    pairs = []
-    s = 0  # индикатор заполнения
-    while s != z:
-        # генерируем два случайных числа и добавляем их в список в виде кортежа
-        x = random.randint(0, n)
-        y = random.randint(0, n)
-        # ограничение на характеристики объектов
-        if (x + y) % 3 == 0:
-            if not (x, y) in pairs:  # защита от одинаковых точек
-                pairs.append((x, y))
-                s += 1
-    print(" \nКординаты точек", pairs)
+    set_of_points = [] # создаем список экземпляров класса
+    for i in range(z):
+        set_of_points.append(Points())
+    print("\nКоличество точек:", z)
+    print("\nКоординаты точек:")
+    for i in set_of_points:
+        print(i)
+    print("\n")
 
     m = []
-    s = 0
-    for j in combinations(pairs, 3):  # составляем комбинаци  z по 3
+    for j in combinations(set_of_points, 3):  # составляем комбинаци  z по 3
         m.append(j)
-        s += 1
 
-    my_triangles = []
+    print('Координаты точек возможных треугольников:\n')
     my_perimeter = []
-    for i in m: #здесь i - это треугольник (3 точки)
-        i = str(i)
-        # ищем в списке i координаты
-        x, y = list(map(list, zip(*[list(map(int, pair)) for pair in re.findall(r"\((\d+)\s*,\s*(\d+)\)", i)])))
-        # перезапись для формулы
-        x1, x2, x3 = x[0], x[1], x[2]
-        y1, y2, y3 = y[0], y[1], y[2]
+    for i in m:
+        print(' Точка № 1: {}, Точка № 2: {}, Точка № 3: {}\n'.format(*i))
+        perimeter = Perimeter(i)
+        my_perimeter.append(perimeter)
 
-        my_perimeter.append(Perimeter(x1, x2, x3, y1, y2, y3))
-        my_triangles.append(Triangle(i))
-
-    for obj in my_triangles:
-        print('\nКоординаты возможного треугольника')
-        print(obj.coordinates)
-
-    max_attr = max(my_perimeter, key=attrgetter('perimeter'))
+    max_attr = max(my_perimeter, key=attrgetter('perimeter')) # поиск максимального значения в списке экземпляров класса Perimeter
     print("\nПериметр самого большого треугольника: ", max_attr.perimeter ,"\n")
-    print("\nКоличество возможных треугольников: ", s, "\n")
 
 except ValueError:
-    print('\nВы ввели что-то не то, перезапустите программу и следуйте указаниям .')
+    print('\nВы ввели неподходящее значение, перезапустите программу и следуйте указаниям.')
+
